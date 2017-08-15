@@ -1,6 +1,6 @@
 //
 //  screenshot.mm
-//  FreeForm
+//  25DaysOfChristmas
 //
 //  Created by Lucas Futch on 8/9/17.
 //
@@ -8,12 +8,15 @@
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
 
+#include "ASScreenRecorder.h"
+
 extern "C" {
     
     void ScreenShotFunction() {
         
+        // Search for this filename in documents folder
         NSString *fileName = @"Picture.png";
-        
+    
         NSURL* documentFolder = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
         
         NSString *documentFolderPath = documentFolder.path;
@@ -25,51 +28,7 @@ extern "C" {
             UIImage* image = [[UIImage alloc] initWithContentsOfFile:filePath];
             
             
-            /// UI popup message
-            //////
-            
-            UIAlertController *alertController = [UIAlertController
-                                                  alertControllerWithTitle:@"alertTitle"
-                                                  message:@"alertMessage"
-                                                  preferredStyle:UIAlertControllerStyleAlert];
-            
-            UIAlertAction *okAction = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"OK", @"OK action")
-                                       style:UIAlertActionStyleDefault
-                                       handler:^(UIAlertAction *action)
-                                       {
-                                           NSLog(@"OK action");
-                                       }];
-            
-           
-            [alertController addAction:okAction];
-            
-            [self presentViewController:alertController animated:YES completion:nil];
-            
-            /////
-            
-            /// Border making by editing image
-            ///////////////////////
-            
-            UIView *blackBG = [[UIView alloc] initWithFrame:CGRectMake(0,0,100,100)];
-            blackBG.backgroundColor = [UIColor blackColor];
-            UIImageView *myPicture = [[UIImageView alloc] initWithImage:
-                                      image];
-            
-            int borderWidth = 100;
-            
-            myPicture.frame = CGRectMake(borderWidth,
-                                         borderWidth,
-                                         blackBG.frame.size.width-borderWidth*2,
-                                         blackBG.frame.size.height-borderWidth*2);
-            
-            [blackBG addSubview: myPicture];
-            
-            UIImage *newImage = myPicture.image;
-            
-            ///////////////////////
-            
-            UIImageWriteToSavedPhotosAlbum(newImage, nil, nil, nil);
+            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
             printf("Screenshot was successfuly saved to camera roll! ");
         }
         else {
@@ -81,9 +40,16 @@ extern "C" {
         
         printf("Inside VideoShotFunction. ");
         
-//        if (UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(video)) {
-//            UISaveVideoAtPathToSavedPhotosAlbum(video, nil, nil, nil);
-//        }
+        ASScreenRecorder *recorder = [ASScreenRecorder sharedInstance];
+        
+        if (recorder.isRecording) {
+            [recorder stopRecordingWithCompletion:^{
+                NSLog(@"Finished recording");
+            }];
+        } else {
+            [recorder startRecording];
+            NSLog(@"Start recording");
+        }
         
         
         
