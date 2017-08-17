@@ -4,64 +4,127 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 using System.IO;
 
-public class screenShot : MonoBehaviour {
+#if PLATFORM_IOS
+using UnityEngine.iOS;
+using UnityEngine.Apple.ReplayKit;
+#endif
+
+public class ScreenshotController : MonoBehaviour {
 
 	// Used so that Xcode can identify these functions being called within Unity
 	[DllImport ("__Internal")]
 	private static extern void ScreenShotFunction();
-	[DllImport ("__Internal")]
-	private static extern void VideoShotFunction();
+
+	// Has to be the same as the one in Xcode(screenshot.mm)
+	private string pictureName;
 
 	// Has to be whole canvas object to remove all buttons from view while screenshot takes place
 	public GameObject canvasObject;
 
+	// Screenshot and video buttons
+	public GameObject cameraButton;
+	public GameObject videoButton;
+
 	// Recording red circle image
 	public GameObject feedbackImage;
+
+	// Confirm Buttons
+	public GameObject confirmScreenshotButton;
+	public GameObject confirmVideoButton;
+
+	// Used for video recording
+	private bool recording;
 	private bool videoPressed;
 
 	void Start() {
 		videoPressed = false;
 	}
+		
 
 	// Camera Button Event Trigger on Pointer Down
-	public void ScreenShot_Down() {
-		Debug.Log ("Pressing Screenshot button. ");
+	public void Screenshot_PointerDown() {
 		canvasObject.GetComponent <Canvas>().enabled = false;
 
-		ScreenCapture.CaptureScreenshot ("Picture.png");
+		pictureName = "Picture.png";
+		ScreenCapture.CaptureScreenshot (pictureName);
 	}
 
-	// Camera Button Event Trigger on Pointer Up
-	public void ScreenShot_Up() {
+	public void Screenshot_PointerUp() {
 		canvasObject.GetComponent <Canvas>().enabled = true;
+		confirmScreenshotButton.SetActive (true);
 
-		// Called on up to allow time to save
+		cameraButton.SetActive (false);
+		videoButton.SetActive (false);
+	}
+
+	// Used on confirm button so that there are no race conditions in image saving
+	public void ScreenshotConfirm() {
+		// Run on Xcode function
 		if (Application.platform != RuntimePlatform.OSXEditor) {
 			ScreenShotFunction ();
 		}
+
+		// Delete file after save
+		if (File.Exists (Application.persistentDataPath + "/" + pictureName)) {
+			File.Delete ((Application.persistentDataPath + "/" + pictureName));
+		}
+
+		// Go back to normal GUI operation
+		confirmScreenshotButton.SetActive (false);
+		cameraButton.SetActive (true);
+		videoButton.SetActive (true);
 	}
 
 	// Video Button OnClick 
-	public void VideoShot() {
+	public void VideoShotClick() {
+		if (!ReplayKit.APIAvailable) {
+			Debug.Log ("API not available! ");
+			return;
+		}
+			
+		if (videoPressed) {
+			videoPressed = false;
 
-		Debug.Log ("Pressing ScreenVideo button. ");
+			// Turn off GUI
+			feedbackImage.SetActive (false);
+			videoButton.SetActive (false);
 
-		if (!videoPressed) {
-			videoPressed = true;
-			feedbackImage.SetActive (true);
+			// Show confirmation button
+			confirmVideoButton.SetActive (true);
+
 		}
 		else {
-			videoPressed = false;
-			feedbackImage.SetActive (false);
+			videoPressed = true;
+
+			// Begin recording mode
+			feedbackImage.SetActive (true);
+			cameraButton.SetActive (false);
+							
 		}
 
-		if (Application.platform != RuntimePlatform.OSXEditor) {
-			VideoShotFunction ();
+		// Recording 
+		recording = ReplayKit.isRecording;
+		recording = !recording;
+		if (recording) {
+			Debug.Log ("I am starting a recording");
+			ReplayKit.StartRecording();
+		}
+		else {
+			Debug.Log ("I am ending a recording");
+			ReplayKit.StopRecording();
 		}
 	}
 
+	public void VideoConfirm(){
+		if (ReplayKit.recordingAvailable) {
+			ReplayKit.Preview();
+		}
 
-
-
+		// Go back to normal GUI operation
+		confirmVideoButton.SetActive (false);
+		cameraButton.SetActive (true);
+		videoButton.SetActive (true);
+	}
+		
 
 }
