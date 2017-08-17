@@ -8,51 +8,34 @@
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
 
-#include "ASScreenRecorder.h"
-
 extern "C" {
     
-    void ScreenShotFunction() {
-        
-        // Search for this filename in documents folder
+    void ScreenShotFunction(int pictureNumber) {
+
+        // Search for the most recent filename in documents folder
         NSString *fileName = @"Picture.png";
     
         NSURL* documentFolder = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-        
         NSString *documentFolderPath = documentFolder.path;
-        NSString *filePath = [documentFolderPath stringByAppendingPathComponent:fileName];
+        
+        NSString *filePath;
+        
+        for (int i = 0; i < 10; i++){
+             filePath = [documentFolderPath stringByAppendingPathComponent:fileName];
+        }
         
         BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
         
         if (fileExists) {
+            printf("Saving image to Camera Roll");
             UIImage* image = [[UIImage alloc] initWithContentsOfFile:filePath];
-            
-            
             UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
-            printf("Screenshot was successfuly saved to camera roll! ");
+            
         }
         else {
             printf("Screenshot was not found :( ");
         }
-    }
     
-    void VideoShotFunction() {
-        
-        printf("Inside VideoShotFunction. ");
-        
-        ASScreenRecorder *recorder = [ASScreenRecorder sharedInstance];
-        
-        if (recorder.isRecording) {
-            [recorder stopRecordingWithCompletion:^{
-                NSLog(@"Finished recording");
-            }];
-        } else {
-            [recorder startRecording];
-            NSLog(@"Start recording");
-        }
-        
-        
-        
     }
 }
 

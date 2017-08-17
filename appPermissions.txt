@@ -1,4 +1,4 @@
 <key>NSPhotoLibraryAddUsageDescription</key>
-<string>NeedLibrary access for uploading Images</string>
+<string>Need library access for uploading images</string>
 <key>NSPhotoLibraryUsageDescription</key>
-<string>NeedLibrary access for uploading Images</string>
+<string>Need library access for uploading images</string>

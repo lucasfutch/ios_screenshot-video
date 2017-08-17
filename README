@@ -1,16 +1,10 @@
 README
 
+0.
+ screenshot.cs is the file for Unity.
 1.
- Add screenshot.mm, ASScreenRecorder.h, ASScreenRecorder.m to "Classes Folder"
+ Add screenshot.mm to "Classes Folder" in Xcode
 
 2.
- Go to Project Navigator>Targets>Link Binary With Libraries and add AssetLibrary.framework
-
-3.
- In Project Navigator>Targets>Compile Sources, add all *.m and *.mm files we added if they are not there.
-
-4.
  Add strings from appPermissions.txt to Info.plist file source code (right click file and select Open As>Source Code)
 
-5.
- screenshot.cs is a file for Unity.
